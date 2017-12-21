@@ -1,0 +1,29 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  
+  tasks:
+    - name: upload a file to a target if it doesnt exist
+      become: yes
+      copy:
+        src: /opt/program1.sh
+        dest: /home/ansible/program1.sh
+        mode: 0755
+
+    - name: if line not ther then add it
+      become: yes
+      lineinfile:
+        state: present
+        dest: /home/ansible/program1.sh
+        regexp: '^HOSTNAME='
+        line: 'HOSTNAME={{ ansible_hostname }}'
+
+    - name: Run the prrograme
+      become: yes
+      shell: /home/ansible/program1.sh
+      register: program_output
+
+    - name: Debug the shell command
+      debug: msg="stdout={{ program_output.stdout }}"
+...

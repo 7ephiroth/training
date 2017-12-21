@@ -1,0 +1,22 @@
+---
+# defaults file for roles/nginx
+php_packages:
+ - php
+ - php-common
+ - php-cli
+ - php-curl
+ - php-cgi
+ - php-fpm
+ - php-mcrypt
+ - php-mysql
+ - php-gd
+
+php_timezone: "europe/Paris"
+php_upload_max_filesize : "20M"
+php_post_max_size: "20M"
+php_memory_limit: "1024M"
+
+
+
+
+

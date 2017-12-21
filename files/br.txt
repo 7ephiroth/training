@@ -1,0 +1,6 @@
+hostname = unfichier 10.0.0.12
+# un rouge hostname n'importe quoi
+; le vert hostname le bordel
+Listen = 127.0.0.1
+# port for http
+www.*80/tcp ip

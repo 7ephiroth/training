@@ -1,0 +1,106 @@
+---
+- name: 0. bienvenue revision
+  hosts: other
+  remote_user: '{{ ansible_user }}'
+  become: yes
+  vars_files:
+    - /etc/ansible/files/variables.yml
+
+  tasks:
+    
+    - name: 1. Install|Remove de elinks
+      become: yes
+      yum:
+        name: elinks
+        state: '{{ present }}'
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 2. Template motd 
+      become: yes
+      template:
+        src: /etc/{{ ansible_user }}/templates/fc-motd.j2
+        dest: /etc/motd
+      when: ansible_os_family == "RedHat"
+
+    - name: 3. copy de fichiers akuma.jpg 
+      become: yes
+      copy:
+        src: /etc/{{ ansible_user }}/files/akuma.jpg
+        dest: /home/{{ ansible_user }}/akuma.jpg 
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '{{ mode }}'
+      when: ansible_os_family == "RedHat"
+
+    - name: 4. Change state selinux pour redhat
+      become: yes
+      selinux:
+        state: '{{ etat }}'
+        policy: targeted
+      when: ansible_os_family == "RedHat"
+
+    - name: 5. Creation fichier brouillont.txt
+      become: yes
+      file:
+        path: /home/{{ ansible_user }}/brouillon.txt 
+        state: touch
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '{{ mode }}'
+
+    - name: 6. Installer des outils Tools
+      become: yes
+      yum: name={{ item }} state=latest update_cache=yes
+      with_items: '{{ tools }}'
+      when: ansible_os_family == "RedHat"
+
+    - name: 7. Creer des users Tata et Titi
+      become: yes
+      user: 
+        name: '{{ item }}'
+        shell: /bin/bash
+        createhome: yes
+        password: Ke0Dp0#fy
+        state: '{{ present }}'
+        remove: no
+        comment: Test creation user via ansible
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+      with_items: '{{ utilisateur }}'
+
+    - name: 8. Creation d'un user Polo
+      become: yes
+      user:
+        name: polo
+        shell: /bin/bash
+        comment: Creation user polo via Ansible
+        createhome: yes
+        state: '{{ present }}'
+        remove: no
+        ssh_key_file: .ssh/id_rsa.pub
+        ssh_key_bits: 2048
+        generate_ssh_key: yes
+
+    - name: 9. Utilisation de clef ssh de polo du serveur ansible
+      become: yes
+      authorized_key:
+        user: ansible
+        key: "{{ lookup('file','/home/ansible/.ssh/id_rsa.pub') }}"
+        #key: '{{ pubkey }}'
+        state: '{{ present }}'
+
+    - name: 10. Creation de fichier en boucle
+      become: yes 
+      file:
+        dest: '/home/{{ ansible_user }}/fichier_{{ item }}'
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '{{ mode }}'
+        state: touch
+      with_sequence: start=1 end=5 stride=1
+
+  roles:
+    - nginx
+...

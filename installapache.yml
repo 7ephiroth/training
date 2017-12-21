@@ -1,0 +1,41 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  tasks:
+    - name: 0. Install le serveur apache
+      become: yes
+      yum:
+        name: httpd
+        state: present
+        update_cache: yes
+
+    - name: 1. Verifie si apache tourne bien.
+      become: yes
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: 2. Cree un fichier index.html
+      become: yes
+      file:
+        state: touch
+        path: /var/www/html/index.html
+
+    - name: 3. add hostname to index.html
+      become: yes
+      lineinfile:
+        path: /var/www/html/index.html
+        state: present
+        line: 'Hostname={{ansible_hostname}}'
+      notify: http reload
+
+  handlers:
+    - name: http reload
+      become: yes
+      service:
+        name: httpd
+        state: reloaded
+        enabled: true
+...

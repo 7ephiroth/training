@@ -1,0 +1,5 @@
+<p>{{ ansible_hostname }} {{ ansible_default_ipv4.address }} free memory {{ ansible_memfree_mb }} MB </p><br>
+{% for server in groups.web %}
+<p>{{ server }} {{ hostvars[server].ansible_default_ipv4.address }} free memory {{ hostvars[server].ansible_memfree_mb }} MB </p><br>
+{% endfor %}
+<p> IS JOE FLACCO ELITE <p>

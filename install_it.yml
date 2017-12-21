@@ -1,0 +1,13 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+...

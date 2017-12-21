@@ -1,0 +1,311 @@
+---
+- name: Playbook entrainement installation
+  hosts: all
+  remote_user: ansible
+  become: yes
+  vars:
+    user: tata
+
+  tasks:
+    - name: 1. Copy du repo Oracle
+      become: yes
+      copy:
+        src: /etc/ansible/files/oracle.repo
+        dest: /etc/yum.repos.d/oracle.repo
+      when: ansible_os_family == "RedHat"
+
+    - name: 2. Copy de la clef GPG du  repo Oracle
+      become: yes
+      copy:
+        src: /etc/ansible/files/RPM-GPG-KEY-oracle-ol7
+        dest: /etc/yum.repos.d/RPM-GPG-KEY-oracle-ol7
+      when: ansible_os_family == "RedHat"
+
+    - name: 2.1 Copy du repo dvd
+      become: yes
+      copy:
+        src: /etc/ansible/files/dvd.repo
+        dest: /etc/yum.repos.d/dvd.repo
+      when: ansible_os_family == "RedHat"
+
+    - name: 3. Installer apache2
+      become: yes
+      yum:
+        name: httpd
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 4. Installer php
+      become: yes
+      yum:
+        name: php
+        state: present
+      when: ansible_os_family == "RedHat"
+
+
+    - name: 5. Installer extension php
+      become: yes
+      yum: name={{ item }} state=present
+      with_items:
+        - php-pdo
+        - php-mysql
+        - php-soap
+        - php-pear
+        - php-common
+        - php-cli
+      when: ansible_os_family == "RedHat"
+
+    - name: 5.1 Installer des paquets comme vim screen
+      become: yes
+      yum: name={{ item }} state=present
+      with_items:
+        - screen
+        - vim
+        - mlocate
+        - wget
+        - net-tools
+      when: ansible_os_family == "RedHat"
+
+    - name: 6. Installation de MariaDB
+      become: yes
+      yum:
+        name: mariadb-server
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: 7. Demarrer le service httpd
+      become: yes
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 8. Demarrer le service MariaDB
+      become: yes
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 9. Changer de fichier index
+      become: yes
+      copy:
+        src: /etc/ansible/files/index-ansible.php
+        dest: /var/www/html/index.php
+        owner: root
+        group: root
+        mode: 0644
+        backup: yes
+      notify: restart httpd
+      when: ansible_os_family == "RedHat"
+
+    - name: 10. Creation de l'utilisateur {{ user }}
+      become: yes
+      user:
+        name: "{{ user }}"
+        shell: /bin/sh
+        createhome: yes
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+
+    - name: 11. Utilisation de template sudoers
+      become: yes
+      template:
+        src: /etc/ansible/templates/sudoers.j2
+        dest: /etc/sudoers.d/{{ user }}
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: 12. Creer 4 fichiers
+      become: yes
+      file:
+        dest: "/home/ansible/file_{{ item }}"
+        state: touch
+        owner: ansible
+        group: ansible
+        mode: 0644
+      with_sequence: start=1 end=4 stride=1
+
+    - name: 13. Installation de Samba
+      become: yes
+      yum:
+       name: samba
+       state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: 14. Demarrer samba
+      become: yes
+      service:
+        name: smb
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 15. Creation d'un dossier commun pour samba
+      become: yes
+      file:
+        path: /srv/samba/commun
+        state: directory
+        mode: 1777
+      when: ansible_os_family == "RedHat"
+
+    - name: 16. Modification du fichier samba.conf
+      become: yes
+      lineinfile:
+        dest: /etc/samba/smb.conf
+        line: 'include /etc/samba/smb.conf.ansible'
+        backup: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 17. Copy du fichier smb.conf.ansible
+      become: yes
+      copy:
+        src: /etc/ansible/files/samba.redhat.ansible.conf
+        dest: /etc/samba/smb.conf.ansible
+        owner: root
+        group: root
+      when: ansible_os_family == "RedHat"
+      notify:
+        - restart samba
+
+    - name: 18. Create firewall rule
+      become: yes
+      command: "/usr/bin/firewall-cmd --permanent --add-service=samba"
+      when: ansible_os_family == "RedHat"
+
+    - name: 19. Reload firewall
+      become: yes
+      command: "/usr/bin/firewall-cmd --reload"
+      when: ansible_os_family == "RedHat"
+
+    - name: 20. Met le mode selinux en mode permissif
+      become: yes
+      selinux:
+        policy: targeted
+        state: permissive
+      when: ansible_os_family == "RedHat"
+
+    - name: 21. copy du fichier motd
+      become: yes
+      template:
+        src: /etc/ansible/templates/fc-motd.j2
+        dest: /etc/motd
+        owner: root
+        group: root
+        backup: yes
+        mode: 0644
+
+    - name: 22. copy du fichier template index.j2
+      become: yes
+      template:
+        src: /etc/ansible/templates/index.j2
+        dest: /var/www/html/index.htm
+        owner: root
+        group: root
+        mode: 0644
+        backup: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: 23. Changer le PermitRootLogin a no
+      become: yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+        backup: yes
+      notify: restart sshd
+
+    - name: 24. Change le fichier host
+      become: yes
+      template:
+        src: /etc/ansible/templates/hosts-ansible.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        backup: yes
+        mode: 0644
+
+    - name: 25. copy du fichier vimrc
+      become: yes
+      copy:
+        src: /etc/ansible/files/vim-ansible
+        dest: /root/.vimrc
+
+    - name: 26. Installer des outils pour debian
+      become: yes
+      apt: name={{ item }} state=present update_cache=yes
+      with_items:
+        - vim
+        - mlocate
+        - screen
+        - net-tools
+        - htop
+        - wget
+      when: ansible_os_family == "Debian"
+
+    - name: 27. Installer Samba pour debian
+      become: yes
+      apt:
+        name: samba
+        state: latest
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: 28. Installer client ntpdate sur Debian
+      become: yes
+      apt: name=ntpdate state=latest update_cache=yes
+      when: ansible_os_family == "Debian"
+
+    - name: 29. Copier template ntpdate
+      become: yes
+      template:
+        src: /etc/ansible/templates/ntpdate-debian.j2
+        dest: /etc/default/ntpdate
+        backup: yes
+      when: ansible_os_family == "Debian"
+
+    - name: création de dossier en boucle
+      become: yes
+      file:
+        dest: "/home/{{ user }}/undossier_{{ item }}"
+        state: directory
+        owner: '{{ user }}'
+        group: '{{ user }}'
+        mode: 0644
+      with_sequence: start=1 end=5 stride=1
+
+
+
+
+
+
+
+  handlers:
+    - name: restart httpd
+      service:
+        name: http
+        state: restarted
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: restart samba
+      service:
+        name: smb
+        state: restarted
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: restart sshd
+      become: yes
+      service:
+        name: sshd
+        state: restarted
+        enabled: yes
+
+
+
+...

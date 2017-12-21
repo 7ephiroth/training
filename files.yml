@@ -1,0 +1,30 @@
+---
+- name: Entrainement
+  hosts: other
+  remote_user: ansible
+  vars_files:
+    - /etc/ansible/files/variables.yml
+
+  tasks:
+
+    - name: 1. copy d'un fichier 
+      become: yes
+      when: ansible_os_family == "RedHat"
+      copy:
+        src: /etc/ansible/files/br.txt
+        dest: /home/{{ ansible_user }}/br1.txt
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '{{ mode }}'
+
+    - name: 2. modification du fichier br.txt avec lineinfile
+      become: yes 
+      when: ansible_os_family == "RedHat"
+      lineinfile:
+        path: /home/{{ ansible_user  }}/br1.txt
+        regexp: '^Listen ='
+        insertbefore: '^#Listen ='
+        line: 'Listen = {{ ansible_default_ipv4.address }}'
+        state: present
+        backup: no
+...

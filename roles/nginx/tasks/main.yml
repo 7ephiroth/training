@@ -1,0 +1,45 @@
+---
+# tasks file for roles/nginx
+- name: 0.1 Ajouter extra epel depots pour redHat
+  become: yes
+  yum: 
+    name: epel-release
+    update_cache: yes
+    state: present
+  #when: ansible_os_family == "Redhat"
+ 
+- name: 10. Install nginx
+  become: yes
+  yum:
+    name: nginx
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
+
+- name: 11. S'assurer que le service est bien démarrer
+  become: yes
+  service:
+    name: nginx
+    state: started
+    enabled: true
+  when: ansible_os_family == "RedHat"
+
+- name: 12. Supprimer le fichier de configue par defaut de nginx
+  become: yes
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+    backup: yes
+  notify: nginx reloaded
+  when: ansible_os_family == "RedHat"
+
+- name: 13. Installer des paquages php
+  become: yes 
+  include: php.yml
+  when: ansible_os_family == "RedHat"
+
+- name: 14. Modifier les sites web pour les {{ utilisateur }}
+  become: yes
+  include: sites.yml
+  when: ansible_os_family == "RedHat"
+...

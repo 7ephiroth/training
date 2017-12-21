@@ -1,0 +1,14 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  vars:
+   - user: tutu
+   - tools:
+     
+
+
+
+
+
+...

@@ -1,0 +1,82 @@
+---
+- hosts: other
+  become: yes
+  user: ansible
+  gather_facts: yes
+
+  tasks:
+
+    - name: 1. Install elinks
+      become: yes
+      yum:
+        name: elinks
+        state: present
+        update_cache: yes
+
+    - name: 2. creation de fichier en boucle
+      become: yes
+      file:
+        dest: "/home/ansible/dossier_{{ item  }}"
+        owner: ansible
+        group: ansible
+        mode: 0644
+        state: directory
+      with_sequence: start=1 end=5 stride=1
+
+    - name: 3. Installer Apache
+      become: yes
+      yum:
+        name: httpd
+        state: present
+        update_cache: yes
+
+    - name: 4. Checker que http est bien installer et redemarre
+      become: yes
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: 4.1 Creer un fichier index.html qui n'existe pas
+      become: yes
+      file:
+        state: touch
+        path: /var/www/html/index.html
+
+    - name: 4.2 Rajouter le Hostname dans le fichier index.html
+      become: yes
+      lineinfile:
+        path: /var/www/html/index.html 
+        state: present
+        line: 'Hostname={{ansible_hostname}}'
+      notify: reload apache
+
+    - name: 5. Template motd
+      become: yes
+      template:
+        src: /etc/ansible/templates/fc-motd.j2
+        dest: /etc/motd
+    
+    - name: 6. Changer selinux policy
+      become: yes
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: 7. template avec utilisation de boucle sur hostvars
+      become: yes
+      template:
+        src: /etc/ansible/templates/test.j2
+        dest: /home/ansible/hostnames.conf
+        owner: ansible
+        group: ansible
+        mode: 0644
+   
+  handlers:
+
+    - name: reload apache
+      service:
+        name: httpd
+        state: reloaded
+        enabled: true
+...

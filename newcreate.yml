@@ -1,0 +1,32 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  vars:
+   - create_file: true
+   - user: tutu
+
+  tasks:
+    - name: multiple items "{{ item }}"
+      file:
+        state: touch
+        path: /home/ansible/{{ item }}
+        owner: ansible
+        group: ansible
+        mode: 0755
+      when: create_file
+      with_items:
+        - file_1
+        - file_2
+        - file_3
+
+    - name: Creation de fichier en boucle
+      become: yes
+      file:
+        dest: "/home/ansible/fichier_{{ item }}"
+        state: touch
+        owner: ansible
+        group: ansible
+        mode: 0755
+      with_sequence: start=1 end=3 stride=1
+...

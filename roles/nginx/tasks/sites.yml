@@ -1,0 +1,59 @@
+---
+- name: 14.1 Modifier date.timezone dans le fihier /etc/php.ini
+  become: yes
+  when: ansible_os_family == "RedHat"
+  lineinfile:
+    path: /etc/php.ini
+    regexp: '^;date.timezone ='
+    line: 'date.timezone = {{ php_timezone }}'
+    backup: yes 
+
+- name: 14.2 Modifier upload_max_filesize dans le fichier /etc/php.ini
+  become: yes
+  when: ansible_os_family == "RedHat"
+  lineinfile:
+    path: /etc/php.ini
+    backup: yes
+    regexp: '^upload_max_filesize ='
+    line: 'upload_max_filesize = {{ php_upload_max_filesize }}'
+
+- name: 14.3 Modifier max_size dans le fichier /etc/php.ini
+  become: yes 
+  when: ansible_os_family == "RedHat"
+  lineinfile:
+    path: /etc/php.ini
+    backup: yes
+    regexp: '^post_max_size ='
+    line: 'post_max_size = {{ php_post_max_size }}'
+
+- name: 14.4 Modifier memory_limit dans le fichier /etc/php.ini
+  become: yes 
+  when: ansible_os_family == "RedHat"
+  lineinfile:
+    path: /etc/php.ini   
+    backup: yes 
+    regexp: '^memory_limit ='
+    line: 'memory_limit = {{ php_memory_limit }}'
+  notify: php restart
+ 
+- name: 14.5 copy d'un fichier 
+  become: yes
+  when: ansible_os_family == "RedHat"
+  copy:
+    src: /etc/ansible/files/br.txt
+    dest: /home/{{ ansible_user }}/br.txt
+    owner: {{ ansible_user }}
+    group: {{ ansible_user }}
+    mode: {{ mode }}
+
+- name: 14.6 modification avec lineinfile
+  become: yes 
+  when: ansible_os_family == "RedHat"
+  lineinfile:
+    regexp: '^hostname ='
+
+
+
+
+
+...

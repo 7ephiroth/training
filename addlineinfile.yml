@@ -1,0 +1,31 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  tasks:
+    - name: 0. create a file
+      file:
+        dest: /home/ansible/hostnames.conf
+        state: touch
+        owner: ansible
+        group: ansible
+        mode: 0644
+
+    - name: 1. if line not there add it.
+      lineinfile:
+        state: present
+        path: /home/ansible/hostnames.conf
+        line: Hostname={{ansible_hostname}}
+
+    - name: 2. add hostname to a config  file
+      lineinfile:
+        path: /home/ansible/hostname.conf
+        regexp: ^Hostname=.*
+        insertafter: ^# Hostname=
+        line: Hostname={{ ansible_hostname }}
+
+
+
+
+
+...

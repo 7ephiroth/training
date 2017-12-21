@@ -1,0 +1,14 @@
+---
+# handlers file for roles/nginx
+- name: nginx reloaded
+  service:
+    name: nginx
+    state: reloaded
+    enabled: yes
+
+- name: php restart
+  service:
+    name: php-fpm
+    state: restarted
+    enabled: true
+...

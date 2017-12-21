@@ -1,0 +1,6 @@
+[Oracle]
+name = Red Hat Enterprise Oracle Depot Linux
+baseurl = http://yum.oracle.com/repo/OracleLinux/OL7/developer_EPEL/x86_64/
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/yum.repos.d/RPM-GPG-KEY-oracle-ol7

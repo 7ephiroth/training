@@ -1,0 +1,18 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+
+
+  tasks:
+
+    - shell: cat /etc/motd
+      register: motd_content
+    - debug:
+        msg: "stdout={{ motd_content['stdout'] }}" 
+
+
+
+
+
+...

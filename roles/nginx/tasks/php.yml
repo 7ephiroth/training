@@ -1,0 +1,19 @@
+---
+- name: 13.1 Ajouter extra epel depots pour redHat
+  become: yes
+  yum: 
+    name: epel-release
+    update_cache: yes
+    state: latest
+  #when: ansible_os_family == "Redhat"
+
+- name: php.yml 13.2. Install de packages pour php nginx
+  become: yes
+  yum:
+    name: '{{ item }}'
+    state: '{{ latest }}'
+    update_cache: yes
+  with_items: '{{ php_packages }}'
+  notify: php restart
+  #when: ansible_os_family == "redHat"
+...

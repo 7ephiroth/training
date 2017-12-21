@@ -1,0 +1,18 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+  vars:
+   - create_file: true
+   - user: tutu
+
+  tasks:
+    - name: Create File
+      file:
+        state: touch
+        path: /home/ansible/varTrue
+        owner: ansible
+        group: ansible
+        mode: 0755
+      when: create_file
+...

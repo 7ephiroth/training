@@ -1,0 +1,23 @@
+---
+utilisateur:
+ - titi
+ - tata
+
+etat: permissive
+present: present
+absent: absent
+latest: latest
+ansible_user: ansible
+mode: 0644
+
+tools:
+ - htop
+ - nano
+ - vim
+ - net-tools
+ - screen
+ - git
+ - wget
+
+pubkey: "{{lookup('file','/home/polo/.ssh/id_rsa.pub')}}"
+...
