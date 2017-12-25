@@ -1,0 +1,43 @@
+---
+- hosts: centos
+  become: yes
+  vars:
+    description: "{{ ansible_hostname }}"
+
+  tasks:
+
+  - name: Install apache httpd
+    become: yes
+    yum:
+      name: httpd
+      state: present
+      update_cache: yes
+    tags:
+      - httpd
+
+  - name: httpd bien démarré
+    become: yes
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    tags:
+      - httpd
+ 
+  - name: write the index file
+    become: yes
+    template:
+      src: /etc/ansible/template.j2
+      dest: /var/www/html/index.html
+    notify: restart httpd
+    tags:
+      - index
+
+  handlers:
+
+  - name: restart httpd
+    service:
+      name: httpd
+      state: restarted
+      enabled: true
+...

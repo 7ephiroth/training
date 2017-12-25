@@ -1,0 +1,6 @@
+[all]
+ansible_user=ansible
+
+[centos]
+client2 ansible_host=10.0.0.12
+
