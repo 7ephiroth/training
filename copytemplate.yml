@@ -1,0 +1,41 @@
+---
+- hosts: all
+  become: yes
+
+  vars:
+    - description: '{{ ansible_hostname }}'
+  tasks:
+  - name: mode permissive pour selinux
+    become: yes
+    selinux:
+      state: permissive
+      policy: targeted
+    register: fire
+    ignore_errors: yes
+    tags:
+      - firewall
+
+#  - name: "erreur gere sur sortie standard"
+#    debug:
+#      msg: "STDOUT - {{ fire.stdout }}"
+
+  - name: copy de fichier
+    become: yes
+    file:
+      path: /home/ansible/hostname.conf
+      state: touch
+      owner: ansible
+      group: ansible
+      mode: 0644
+    tags:
+      - touch
+
+  - name: Ajout ds le fichier hostname.conf
+    become: yes
+    lineinfile:
+      path: /home/ansible/hostname.conf
+      state: present
+      line: 'hostname = {{ description }}'
+    tags:
+      - write
+...

@@ -1,0 +1,21 @@
+---
+- name: Hello World!
+  hosts: centos
+
+  tasks:
+
+  - name: Hello World!
+    shell: echo "Hi! Tower is working!"
+    register: com_out
+    ignore_errors: yes
+    tags:
+      - hello
+
+  - name: Debug sur stderr
+    debug:
+      msg: "STDERR - {{ com_out.stderr }}"
+
+  - name: Debug sur stdout
+    debug:
+      msg: "STDOUT - {{ com_out.stdout }}"
+...
