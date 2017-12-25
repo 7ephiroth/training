@@ -1,0 +1,28 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+
+  tasks:
+    - name: Copy fichier 
+      become: yes
+      copy:
+        src: /etc/ansible/playbooks/test.sh
+        dest: /home/ansible/test.sh
+
+    - name: Essaye d'executer le fichier a distance
+      become: yes
+      shell: /home/ansible/test.sh
+      ignore_errors: yes
+      register: com_out
+
+    - name: Debug sur stdout
+      become: yes
+      debug:
+        msg: "STDOUT - {{ com_out.stdout  }}"
+
+    - name: Debug sur stderr
+      become: yes
+      debug:
+        msg: "STDERR - {{ com_out.stderr  }}"
+...

@@ -1,0 +1,8 @@
+---
+- hosts: other
+  become: yes
+  remote_user: ansible
+  
+  tasks:
+    - include: tasks/motd_main.yml
+...

@@ -1,0 +1,58 @@
+---
+- hosts: other
+  become: yes
+  #remote_user: ansible
+
+  vars:
+    database_name_here: wordpress
+    username_here: wordpress
+    password_here: ajc
+    dbhost_here: 192.168.133.143
+
+  tasks:
+  - name: Install php for wordpress
+    become: yes
+    yum:
+      name: "{{item}}"
+      state: present
+      update_cache: yes
+    with_items:
+      - php
+      - php-gd
+      - php-pear
+      - php-mysql
+    tags:
+      - installphp
+    register: out_php
+
+  - name: restart httpd
+    become: yes
+    service:
+      name: httpd
+      state: restarted
+      enabled: true
+    tags:
+      - reloadhttpd
+    register: out_httpd
+
+  - name: Telecharger archive de wordpress
+    become: yes
+    unarchive:
+      src: https://fr.wordpress.org/wordpress-4.9.1-fr_FR.tar.gz
+      dest: /tmp/
+      remote_src: True
+
+  - name: remove html folder
+    become: yes
+    command: /usr/bin/rm -rf /var/www/html
+
+  - name: move wordpress
+    become: yes
+    command: /usr/bin/mv /tmp/wordpress/ /var/www/html
+
+  - name: copy template to host
+    become: yes
+    template:
+      src: /etc/ansible/templates/wp-config.j2
+      dest: /var/www/html/wp-config.php
+...

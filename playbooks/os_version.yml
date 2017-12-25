@@ -1,0 +1,11 @@
+---
+- hosts: local
+  become: yes
+  remote_user: ansible
+
+  tasks:
+
+  - name: Debug
+    debug:
+      msg: "The server OS is avec la var ansible_os_family {{ ansible_os_family }}-{{ansible_distribution_major_version}} ou avec la var ansible_distribution {{ ansible_distribution }}"
+...

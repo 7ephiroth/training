@@ -1,0 +1,13 @@
+---
+- hosts: other
+  become: yes
+  remote_user: ansible
+
+  tasks:
+  - name: Debug
+    debug:
+      msg: "The server {{ ansible_hostname }} IP is {{ansible_default_ipv4.address  }}"
+    tags:
+      - ip
+    ignore_errors: ipaddress
+...

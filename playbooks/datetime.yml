@@ -1,0 +1,9 @@
+---
+- hosts: other
+  become: yes
+  remote_user: ansible
+
+  tasks:
+  - debug:
+      msg: "The server Date is {{ ansible_date_time.date }} Time {{ ansible_date_time.hour }}H{{ ansible_date_time.minute }}min"
+...

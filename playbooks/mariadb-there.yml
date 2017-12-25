@@ -1,0 +1,34 @@
+---
+- hosts: other
+  remote_user: ansible
+  become: yes
+
+  tasks:
+
+    - name: Install mysql server
+      become: yes
+      yum:
+        name: mariadb-server
+        state: latest
+        update_cache: yes
+      ignore_errors: yes
+      register: there
+      tags:
+        - packages
+
+    - name: Verifie si mariadb est bien activer
+      become: yes
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+      register: running
+      tags:
+        - startup
+      #ignore_errors: yes
+
+    #- name: Debug sur out
+    #  become: yes
+    #  debug:
+    #    msg: "STDOUT - {{ there['stdout'] }}"
+...
